@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { api } from '@/trpc/react';
+import { type UserType } from '../types/types';
 
 export default function OtpPage() {
     const length = 8;
@@ -13,10 +14,10 @@ export default function OtpPage() {
     const { setIsLoggedIn, setUser, user } = useData();
 
     const verifyOtp = api.user.verifyUser.useMutation({
-        onSuccess: (user) => {
+        onSuccess: (user: UserType) => {
             setUser(user);
             setIsLoggedIn(true);
-            sessionStorage.setItem('auth-token', user?.token)
+            sessionStorage.setItem('auth-token', String(user?.token))
             sessionStorage.setItem('user', JSON.stringify(user))
             router?.push('/')
         }
@@ -25,7 +26,7 @@ export default function OtpPage() {
     const submitOtp = (pin: string) => {
         if (pin?.length === length) {
             verifyOtp.mutate({
-                token: sessionStorage.getItem('auth-token'),
+                token: String(sessionStorage.getItem('auth-token')),
                 otp: Number(pin)
             })
         }

@@ -3,10 +3,8 @@ import { api } from '@/trpc/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { type SignupDataType } from '../types/types';
 
-type SignupDataType = {
-    name: string; email: string; password: string
-}
 
 export default function Signup() {
     const [userData, setUserData] = useState<SignupDataType>({

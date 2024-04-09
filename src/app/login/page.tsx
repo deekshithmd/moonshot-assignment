@@ -4,6 +4,7 @@ import { api } from "@/trpc/react";
 import Link from 'next/link';
 import { useData } from '../contexts/DataContext';
 import { useRouter } from 'next/navigation';
+import { type UserType } from '../types/types';
 
 export default function Login() {
     const [loginData, setLoginData] = useState({
@@ -15,10 +16,10 @@ export default function Login() {
     const router = useRouter();
 
     const loginUser = api.user.loginUser.useMutation({
-        onSuccess: (user) => {
+        onSuccess: (user: UserType) => {
             setUser(user);
             setIsLoggedIn(true);
-            sessionStorage.setItem('auth-token', user?.token)
+            sessionStorage.setItem('auth-token', String(user?.token))
             sessionStorage.setItem('user', JSON.stringify(user))
             if (user?.verified) {
                 router.push('/')

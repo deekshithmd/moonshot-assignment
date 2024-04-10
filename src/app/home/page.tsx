@@ -34,14 +34,18 @@ export default function HomePage() {
     })
 
     const handleFetchNextPage = async () => {
-        if (Number(allCategories?.data?.pages?.length) - 1 === page) {
-            await allCategories?.fetchNextPage();
+        if (!allCategories?.isLoading) {
+            if (Number(allCategories?.data?.pages?.length) - 1 === page) {
+                await allCategories?.fetchNextPage();
+            }
+            setPage(prev => prev + 1);
         }
-        setPage(prev => prev + 1);
     }
 
     const handleFetchPreviousPage = () => {
-        setPage(prev => prev > 1 ? prev - 1 : 0);
+        if (!allCategories?.isLoading) {
+            setPage(prev => prev > 1 ? prev - 1 : 0);
+        }
     }
 
     return (

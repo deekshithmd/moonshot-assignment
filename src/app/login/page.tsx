@@ -11,14 +11,15 @@ export default function Login() {
         email: '',
         password: ''
     })
-    const [error, setError] = useState<string>('')
+    const [error, setError] = useState<string>('');
     const { setUser, setIsLoggedIn } = useData();
+    const [showPassword, setShowPassword] = useState<boolean>(false)
     const router = useRouter();
 
     const loginUser = api.user.loginUser.useMutation({
         onSuccess: (user: UserType) => {
-            setUser(user);
-            setIsLoggedIn(true);
+            setUser && setUser(user);
+            setIsLoggedIn && setIsLoggedIn(true);
             sessionStorage.setItem('auth-token', String(user?.token))
             sessionStorage.setItem('user', JSON.stringify(user))
             if (user?.verified) {
@@ -58,14 +59,17 @@ export default function Login() {
                         onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
                         required />
                     <label htmlFor="password">Password</label>
-                    <input
-                        type="password"
-                        value={loginData?.password}
-                        placeholder='Enter'
-                        id="password"
-                        className='w-full border rounded-md p-2 text-base placeholder:text-[#848484]'
-                        onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                        required />
+                    <div className='relative flex items-center'>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={loginData?.password}
+                            placeholder='Enter'
+                            id="password"
+                            className='w-full border rounded-md p-2 text-base placeholder:text-[#848484]'
+                            onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                            required />
+                        <span className='absolute right-3 cursor-pointer underline' onClick={() => setShowPassword(!showPassword)}>{showPassword ? 'Hide' : 'Show'}</span>
+                    </div>
                     <button type='submit' className='bg-black text-white text-center rounded-md w-full mt-8 mb-6 py-4'>LOGIN</button>
                 </form>
                 <hr />

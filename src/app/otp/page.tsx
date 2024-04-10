@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 'use client'
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
@@ -14,9 +15,9 @@ export default function OtpPage() {
     const { setIsLoggedIn, setUser, user } = useData();
 
     const verifyOtp = api.user.verifyUser.useMutation({
-        onSuccess: (user: UserType) => {
-            setUser(user);
-            setIsLoggedIn(true);
+        onSuccess: (user: { token: string; name: string; email: string; id: number; } | undefined) => {
+            setUser && setUser(user as UserType);
+            setIsLoggedIn && setIsLoggedIn(true);
             sessionStorage.setItem('auth-token', String(user?.token))
             sessionStorage.setItem('user', JSON.stringify(user))
             router?.push('/')
@@ -66,7 +67,7 @@ export default function OtpPage() {
                                 maxLength={1}
                                 value={OTP[index]}
                                 onChange={(e) => handleTextChange(e.target.value, index)}
-                                ref={(ref) => (inputRef.current[index] = ref as HTMLInputElement)}
+                                ref={(ref: HTMLInputElement) => { inputRef.current[index] = ref }}
                                 className={`border border-solid border-border-slate-500 focus:border-blue-600 px-3.5 py-2`}
                             />
                         ))}

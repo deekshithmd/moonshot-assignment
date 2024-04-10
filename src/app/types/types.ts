@@ -8,9 +8,9 @@ export type UserType = {
 
 export type ContextType = {
     isLoggedin: boolean;
-    setIsLoggedIn: (val: boolean) => void;
+    setIsLoggedIn?: (val: boolean) => void;
     user: UserType;
-    setUser: (val: UserType) => void
+    setUser?: (val: UserType) => void
 }
 
 export type SignupDataType = {

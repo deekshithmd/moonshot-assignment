@@ -75,7 +75,7 @@ export default function Signup() {
                     value={userData?.password}
                     placeholder='Enter'
                     id="password"
-                    className='border rounded-md p-2'
+                    className='border rounded-md p-2 w-full'
                     onChange={(e) => {
                         if (error) {
                             setError('')
@@ -84,6 +84,7 @@ export default function Signup() {
                     }}
                     required
                 />
+
                 {error && <p className='text-sm text-red-500'>{error}</p>}
                 <button type='submit' className='bg-black text-white text-center rounded-md w-full mt-8 mb-6 py-4'>CREATE ACCOUNT</button>
             </form>

@@ -1,11 +1,10 @@
 'use client'
 import { IoIosSearch } from "react-icons/io";
-import Cart from '../../../../public/cart.svg'
-import Angle from '../../../../public/angle.svg'
-import Image from 'next/image';
 import { LuLogOut } from 'react-icons/lu';
 import { useRouter } from 'next/navigation';
 import { useData } from '@/app/contexts/DataContext';
+import { PiShoppingCartSimple } from "react-icons/pi";
+import { LiaAngleRightSolid } from "react-icons/lia";
 
 export const Header = () => {
     const { user } = useData();
@@ -34,13 +33,14 @@ export const Header = () => {
                 </div>
                 <div className='flex items-center justify-end gap-x-5'>
                     <IoIosSearch className='w-5 h-5 text-[#333333]' />
-                    <Image src={Cart} width={21} height={19} className="w-5 h-auto" alt="cart" />
+                    <PiShoppingCartSimple className="w-5 h-auto" />
                 </div>
             </div>
             <div className='w-full flex items-center justify-center bg-[#F4F4F4] py-2 gap-x-5'>
-                <Image src={Angle} width={16} height={16} className="w-4 h-auto" alt="left" />
+                <LiaAngleRightSolid className="w-4 h-auto" />
                 <span className='font-medium text-sm text-black'>Get 10% off on business sign up</span>
-                <Image src={Angle} width={16} height={16} className="w-4 h-auto rotate-180" alt="left" />
+                <LiaAngleRightSolid className="w-4 h-auto rotate-180" />
+
             </div>
         </nav>
     )

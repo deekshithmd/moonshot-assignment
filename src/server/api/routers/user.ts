@@ -5,6 +5,14 @@ import { TRPCError } from '@trpc/server';
 import { sendVerificationEmail } from '@/utils/mailer';
 import jwt from 'jsonwebtoken'
 import { z } from 'zod';
+import { type Secret } from 'jsonwebtoken';
+
+export type UserType = {
+    name: string;
+    email: string;
+    id: number;
+    verified?: boolean;
+}
 
 export const userRouter = createTRPCRouter({
     create: publicProcedure
@@ -14,7 +22,7 @@ export const userRouter = createTRPCRouter({
                 data: createUserSchema.parse(input),
             });
             if (user?.email) {
-                const token = jwt.sign({ name: user?.name, email: user?.email, id: user?.id }, process.env.JWT_SECRET);
+                const token = jwt.sign({ name: user?.name, email: user?.email, id: user?.id }, process.env.JWT_SECRET as Secret);
                 const otp = randomInt(10000000, 99999999);
                 await ctx.db.users.update({
                     where: { id: user?.id },
@@ -36,20 +44,20 @@ export const userRouter = createTRPCRouter({
             })
 
             if (user?.email) {
-                let userData = { name: user?.name, email: user?.email, id: user?.id, verified: user?.verified }
+                const userData = { name: user?.name, email: user?.email, id: user?.id, verified: user?.verified }
                 if (user?.password === input.password) {
                     if (user?.verified) {
-                        const token = jwt.sign(userData, process.env.JWT_SECRET);
+                        const token: string = jwt.sign(userData, process.env.JWT_SECRET as Secret);
                         return { ...userData, token };
                     }
                     else {
-                        const token = jwt.sign(userData, process.env.JWT_SECRET);
+                        const token: string = jwt.sign(userData, process.env.JWT_SECRET as Secret);
                         const otp = randomInt(10000000, 99999999);
                         await ctx.db.users.update({
                             where: { id: user?.id },
                             data: { otp }
                         })
-                        await sendVerificationEmail({ email: user?.email as string, otp })
+                        await sendVerificationEmail({ email: user?.email, otp })
                         return { ...userData, token };
                     }
                 }
@@ -64,13 +72,15 @@ export const userRouter = createTRPCRouter({
     verifyUser: publicProcedure
         .input(otpSchema)
         .mutation(async ({ ctx, input }) => {
-            let userId;
-            jwt.verify(input.token, process.env.JWT_SECRET, (err, user) => {
+            let userId = 0;
+            jwt.verify(input.token, String(process.env.JWT_SECRET), (err, user) => {
                 if (err) {
                     throw new TRPCError({ code: 'UNAUTHORIZED', message: 'User not authorized' })
                 }
                 else {
-                    userId = user?.id;
+                    if (user && typeof user !== 'string') {
+                        userId = Number(user?.id);
+                    }
                 }
             })
             const user = await ctx.db.users.findUnique({
@@ -78,14 +88,16 @@ export const userRouter = createTRPCRouter({
             })
 
             if (user?.email) {
-                let userData = { name: user?.name, email: user?.email, id: user?.id }
+                const userData = { name: user?.name, email: user?.email, id: user?.id }
                 if (user?.otp === input?.otp) {
                     await ctx.db.users.update({
                         where: { id: user?.id },
                         data: { verified: true, otp: 0 }
                     })
-                    const token = jwt.sign(userData, process.env.JWT_SECRET);
-                    return { ...userData, token };
+                    const token: string = jwt.sign(userData, process.env.JWT_SECRET as Secret);
+                    return {
+                        ...userData, token
+                    };
                 }
                 else {
                     throw new TRPCError({ code: 'UNAUTHORIZED', message: 'OTP is not valid' })
@@ -95,24 +107,29 @@ export const userRouter = createTRPCRouter({
     updateInterests: publicProcedure
         .input(interestUpdateSchema)
         .mutation(async ({ ctx, input }) => {
-            let userId;
-            jwt.verify(input.token, process.env.JWT_SECRET, (err, user) => {
+            let userId = 0;
+            jwt.verify(input.token, process.env.JWT_SECRET as Secret, (err, user) => {
                 if (err) {
                     throw new TRPCError({ code: 'UNAUTHORIZED', message: 'User not authorized' })
                 }
                 else {
-                    userId = user?.id;
+                    if (user && typeof user !== 'string') {
+                        userId = Number(user?.id);
+                    }
+
                 }
             })
             const user = await ctx.db.users.findUnique({
                 where: { id: userId }
             })
-            let updatedInterestList = [...user?.interests];
+            let updatedInterestList = user?.interests?.map(item => item);
             if (user?.interests?.includes(input?.categoryId)) {
                 updatedInterestList = user?.interests?.filter(id => id !== input?.categoryId)
             }
             else {
-                updatedInterestList.push(input?.categoryId)
+                if (updatedInterestList && updatedInterestList?.length >= 0) {
+                    updatedInterestList.push(input?.categoryId)
+                }
             }
             await ctx.db.users.update({
                 where: { id: user?.id },
@@ -122,13 +139,15 @@ export const userRouter = createTRPCRouter({
     getUser: publicProcedure
         .input(z.object({ token: z.string() }))
         .query(({ ctx, input }) => {
-            let userId;
-            jwt.verify(input.token, process.env.JWT_SECRET, (err, user) => {
+            let userId = 0;
+            jwt.verify(input.token, process.env.JWT_SECRET as Secret, (err, user) => {
                 if (err) {
                     throw new TRPCError({ code: 'UNAUTHORIZED', message: 'User not authorized' })
                 }
                 else {
-                    userId = user?.id;
+                    if (user && typeof user !== 'string') {
+                        userId = Number(user?.id);
+                    }
                 }
             })
             return ctx.db.users.findUnique({
